@@ -1,0 +1,11 @@
+[package]
+name = "surface-IR-rust"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+v4l = "0.14"
+nix = { version = "0.29", features = ["ioctl"] }
+libc = "0.2"
+packed_simd_2 = { version = "0.3", optional = true } # For SIMD optimization later
+
