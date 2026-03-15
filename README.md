@@ -59,16 +59,7 @@ ffplay -f video4linux2 -pixel_format bgr0 -video_size 640x480 -i /dev/video20
 
 ## How It Works (The Technical Challenge)
 
-The Surface Pro 5 uses the Intel IPU3 image coprocessor. The upstream Linux drivers do not officially map or support toggling the privacy/IR LED on the OV7251 sensor.
-
-To solve this, we inject raw I2C register configurations (specifically the `0x3bxx` strobe registers) directly into the sensor on I2C bus 3. However, this presented a massive challenge:
-- **The Stutter/Freeze Problem:** Continuously rewriting I2C registers to force the LED on while the IPU3 CSI-2 receiver is actively streaming causes `DPHY synchronization errors`. This results in the video queue dropping to `0` and the stream freezing periodically for ~1 second.
-- **The "Stay Off" Problem:** If we inject the I2C configuration *before* the stream starts, the IPU3 driver's internal initialization routine resets the OV7251 sensor, wiping our custom IR configuration entirely.
-
-**The Solution:** 
-We implemented a **Delayed One-Shot Injector**. The `scanner` daemon waits exactly 2.5 seconds *after* the `v4l2-ctl` stream is requested. This gives the IPU3 driver enough time to finish its initialization and resets. The injector then fires its I2C configuration exactly once. 
-
-This strict hardware synchronization guarantees that the IR LED turns on, stays on, and maintains a perfectly smooth, freeze-free 30FPS stream without any I2C bus contention!
+See [ARCHITECTURE.md](https://github.com/Yourumark/surface-IR-rust/blob/master/ARCHITECTURE.md)
 
 ## License
 
